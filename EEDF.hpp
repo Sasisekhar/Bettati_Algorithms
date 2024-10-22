@@ -5,9 +5,9 @@
 #include <algorithm>
 #include "data_structures.hpp"
 
-std::vector<schedule> schedule_EEDF(std::vector<tasks> _task_set, int processor) {
+std::vector<process_schedule> schedule_EEDF(const std::vector<tasks>& _task_set, int processor, const std::vector<tasks>& original_task_set = {}) {
     auto task_set = _task_set;
-    std::vector<schedule> EEDF_schedule;
+    std::vector<process_schedule> EEDF_schedule;
 
     int total_deadline = 0;
 
@@ -18,10 +18,17 @@ std::vector<schedule> schedule_EEDF(std::vector<tasks> _task_set, int processor)
     }
 
     std::vector<subtasks> subtask_set; // for this processor
+    std::vector<subtasks> original_subtask_set; //non-inflated (if algorithm inflates)
 
     // Get subtasks for the current processor
     for(auto task : task_set) {
         subtask_set.push_back(task.subtask_set[processor]);
+    }
+
+    if(!original_task_set.empty()){
+        for(const auto task : original_task_set) {
+            original_subtask_set.push_back(task.subtask_set[processor]);
+        }
     }
 
     // Sort the subtask_set by effective_deadline (smallest to largest)
@@ -43,8 +50,9 @@ std::vector<schedule> schedule_EEDF(std::vector<tasks> _task_set, int processor)
                 // Schedule the subtask
                 EEDF_schedule.push_back({
                     .processor_id = processor,
-                    .task_at_time = std::make_pair(subtask_set[i].spid, current_time),
-                    .task_duration = subtask_set[i].processing_time
+                    .task = ((original_task_set.empty())? subtask_set[i] : original_subtask_set[i]),
+                    .start_time = current_time,
+                    .task_duration = subtask_set[i].processing_time,
                 });
 
                 // Update the current time and mark this subtask as completed

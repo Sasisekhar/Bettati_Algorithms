@@ -22,10 +22,11 @@ struct tasks {
     std::vector<subtasks> subtask_set;
 };
 
-struct schedule {
+struct process_schedule {
     int processor_id;
-    std::pair<int, int> task_at_time; //<sPID, Time>
-    int task_duration;
+    subtasks task;
+    int start_time;
+    int task_duration; //This value includes artificial idle times
 };
 
 // Function to print the data as a table
@@ -88,7 +89,7 @@ void print_tasks_as_table(const std::vector<tasks>& task_list) {
     }
 }
 
-std::vector<tasks> compute_effective_times(std::vector<tasks> _task_set) {
+std::vector<tasks> compute_effective_times(const std::vector<tasks>& _task_set) {
     auto task_set = _task_set;
 
     for(auto& task : task_set) {
@@ -116,13 +117,22 @@ std::vector<tasks> compute_effective_times(std::vector<tasks> _task_set) {
 }
 
 // Function to print the Gantt chart
-void print_gantt_chart(const std::vector<schedule>& EEDF_schedule) {
+void print_gantt_chart(const std::vector<process_schedule>& schedule) {
+
+    int x_axis_start = 0;
+
     // Create a map to group schedules by processor ID
-    std::map<int, std::vector<schedule>> processor_schedules;
+    std::map<int, std::vector<process_schedule>> processor_schedules;
 
     // Populate the map with schedules grouped by processor
-    for (const auto& sched : EEDF_schedule) {
+    for (const auto& sched : schedule) {
         processor_schedules[sched.processor_id].push_back(sched);
+    }
+
+    for (auto& [processor_id, schedules] : processor_schedules) {
+        std::sort(schedules.begin(), schedules.end(), [](const process_schedule& a, const process_schedule& b) {
+            return a.start_time < b.start_time;
+        });
     }
 
     // Print Gantt chart for each processor
@@ -131,20 +141,20 @@ void print_gantt_chart(const std::vector<schedule>& EEDF_schedule) {
         std::cout << "Processor: P" << processor_id << "\n+";
 
         // First loop: Print the Gantt chart boxes (Txx or ∅ for idle time)
-        int current_time = 0;
+        int current_time = x_axis_start;
         for (const auto& task : tasks) {
-            int task_start_time = task.task_at_time.second;
+            int task_start_time = task.start_time;
             int task_end_time = task_start_time + task.task_duration;
 
             // Print idle time (∅) if there's a gap between the current time and task start
             if (task_start_time > current_time) {
                 int idle_duration = task_start_time - current_time;
-                std::cout << std::setw(idle_duration * 3) << std::setfill('-') << "-";
+                std::cout << std::setw(idle_duration * 4) << std::setfill('-');
                 std::cout << "+";  // Separator after idle time
             }
 
             // Print the task box (Txx) with the task duration (width multiplied by 3)
-            std::cout << std::setw(task.task_duration * 3) << std::setfill('-') << "-";
+            std::cout << std::setw(task.task_duration * 4) << std::setfill('-');
             std::cout << "+";  // Separator after the task
 
             // Update the current time to the end of this task
@@ -154,21 +164,27 @@ void print_gantt_chart(const std::vector<schedule>& EEDF_schedule) {
         std::cout << "\n|";  // Start the line with task names (Txx or ∅)
 
         // Second loop: Print task names (Txx or ∅ for idle time)
-        current_time = 0;
+        current_time = x_axis_start;
         for (const auto& task : tasks) {
-            int task_start_time = task.task_at_time.second;
+            int task_start_time = task.start_time;
             int task_end_time = task_start_time + task.task_duration;
 
             // Print idle time (∅) if there's a gap between the current time and task start
             if (task_start_time > current_time) {
                 int idle_duration = task_start_time - current_time;
-                std::cout << std::setw(idle_duration * 3) << std::setfill('/') << "///";
+                std::cout << std::setw(idle_duration * 4) << std::setfill('/');
                 std::cout << "|";  // Separator after idle time
             }
 
-            // Print the task ID (Txx) with the task duration (width multiplied by 3)
-            std::cout << std::setw(task.task_duration * 3) << std::setfill(' ') << "T" + std::to_string(task.task_at_time.first);
-            std::cout << "|";  // Separator after the task
+            if(task.task.processing_time != task.task_duration){
+                // Print the task ID (Txx) with the task duration (width multiplied by 3)
+                std::cout   << std::setfill(' ') << std::setw((task.task.processing_time * 4)) << "T" + std::to_string(task.task.spid)
+                            << std::setfill(':') << std::setw(((task.task_duration - task.task.processing_time) * 4))
+                            << "|";  // Separator after the task
+            } else {
+                // Print the task ID (Txx) with the task duration (width multiplied by 3)
+                std::cout   << std::setfill(' ') << std::setw((task.task.processing_time * 4)) << "T" + std::to_string(task.task.spid) + "|";
+            }
 
             // Update the current time to the end of this task
             current_time = task_end_time;
@@ -177,20 +193,20 @@ void print_gantt_chart(const std::vector<schedule>& EEDF_schedule) {
         std::cout << "\n+";
 
         // Third loop: Print the bottom border of the chart
-        current_time = 0;
+        current_time = x_axis_start;
         for (const auto& task : tasks) {
-            int task_start_time = task.task_at_time.second;
+            int task_start_time = task.start_time;
             int task_end_time = task_start_time + task.task_duration;
 
             // Print idle time border
             if (task_start_time > current_time) {
                 int idle_duration = task_start_time - current_time;
-                std::cout << std::setw(idle_duration * 3) << std::setfill('-') << "-";
+                std::cout << std::setw(idle_duration * 4) << std::setfill('-');
                 std::cout << "+";  // Separator after idle time
             }
 
             // Print task border
-            std::cout << std::setw(task.task_duration * 3) << std::setfill('-') << "-";
+            std::cout << std::setw(task.task_duration * 4) << std::setfill('-');
             std::cout << "+";  // Separator after the task
 
             // Update the current time to the end of this task
@@ -200,20 +216,28 @@ void print_gantt_chart(const std::vector<schedule>& EEDF_schedule) {
         std::cout << "\n";
 
         // Fourth loop: Print time indices below the chart
-        current_time = 0;
+        current_time = x_axis_start;
         std::cout << std::setfill(' ');
         for (const auto& task : tasks) {
-            int task_start_time = task.task_at_time.second;
+            int task_start_time = task.start_time;
             int task_end_time = task_start_time + task.task_duration;
 
             // Print idle time (skip time index during idle)
             if (task_start_time > current_time) {
                 int idle_duration = task_start_time - current_time;
-                std::cout << current_time << std::setw((idle_duration * 3) + 1);
+                std::cout << current_time << std::setw((idle_duration * 4));
             }
 
-            // Print task start time
-            std::cout << task_start_time << std::setw((task.task_duration * 3) + 1);
+            if(task.task.processing_time != task.task_duration) {
+                // Print task start time and (end time when inflated)
+                std::cout   << task_start_time 
+                            << std::setw((task.task.processing_time * 4)) 
+                            << task_start_time + task.task.processing_time 
+                            << std::setw(((task.task_duration - task.task.processing_time) * 4));
+            } else {
+                // Print task start time
+                std::cout << task_start_time << std::setw((task.task_duration * 4));
+            }
 
             // Update the current time to the end of this task
             current_time = task_end_time;
