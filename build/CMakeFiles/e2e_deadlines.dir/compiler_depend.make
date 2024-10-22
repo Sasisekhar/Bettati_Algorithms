@@ -7,6 +7,7 @@ CMakeFiles/e2e_deadlines.dir/main.cpp.o: /home/sasisekhar/Desktop/Bettati_Algori
   /home/sasisekhar/Desktop/Bettati_Algorithms/algorithmC.hpp \
   /home/sasisekhar/Desktop/Bettati_Algorithms/algorithmH.hpp \
   /home/sasisekhar/Desktop/Bettati_Algorithms/data_structures.hpp \
+  /home/sasisekhar/Desktop/Bettati_Algorithms/input_reader.hpp \
   /usr/include/alloca.h \
   /usr/include/asm-generic/errno-base.h \
   /usr/include/asm-generic/errno.h \
@@ -31,6 +32,7 @@ CMakeFiles/e2e_deadlines.dir/main.cpp.o: /home/sasisekhar/Desktop/Bettati_Algori
   /usr/include/c++/13/bits/exception.h \
   /usr/include/c++/13/bits/exception_defines.h \
   /usr/include/c++/13/bits/exception_ptr.h \
+  /usr/include/c++/13/bits/fstream.tcc \
   /usr/include/c++/13/bits/functexcept.h \
   /usr/include/c++/13/bits/functional_hash.h \
   /usr/include/c++/13/bits/hash_bytes.h \
@@ -106,6 +108,7 @@ CMakeFiles/e2e_deadlines.dir/main.cpp.o: /home/sasisekhar/Desktop/Bettati_Algori
   /usr/include/c++/13/ext/numeric_traits.h \
   /usr/include/c++/13/ext/string_conversions.h \
   /usr/include/c++/13/ext/type_traits.h \
+  /usr/include/c++/13/fstream \
   /usr/include/c++/13/initializer_list \
   /usr/include/c++/13/iomanip \
   /usr/include/c++/13/ios \
@@ -207,8 +210,10 @@ CMakeFiles/e2e_deadlines.dir/main.cpp.o: /home/sasisekhar/Desktop/Bettati_Algori
   /usr/include/x86_64-linux-gnu/bits/wctype-wchar.h \
   /usr/include/x86_64-linux-gnu/bits/wordsize.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/atomic_word.h \
+  /usr/include/x86_64-linux-gnu/c++/13/bits/basic_file.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/c++allocator.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/c++config.h \
+  /usr/include/x86_64-linux-gnu/c++/13/bits/c++io.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/c++locale.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/cpu_defines.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/ctype_base.h \
@@ -247,7 +252,9 @@ CMakeFiles/e2e_deadlines.dir/main.cpp.o: /home/sasisekhar/Desktop/Bettati_Algori
 
 /usr/include/x86_64-linux-gnu/c++/13/bits/ctype_base.h:
 
-/usr/include/x86_64-linux-gnu/c++/13/bits/atomic_word.h:
+/usr/include/x86_64-linux-gnu/c++/13/bits/c++io.h:
+
+/usr/include/x86_64-linux-gnu/c++/13/bits/basic_file.h:
 
 /usr/include/x86_64-linux-gnu/bits/waitstatus.h:
 
@@ -351,6 +358,14 @@ CMakeFiles/e2e_deadlines.dir/main.cpp.o: /home/sasisekhar/Desktop/Bettati_Algori
 
 /usr/include/c++/13/vector:
 
+/usr/include/x86_64-linux-gnu/sys/single_threaded.h:
+
+/usr/include/c++/13/type_traits:
+
+/usr/lib/gcc/x86_64-linux-gnu/13/include/stddef.h:
+
+/usr/include/c++/13/tuple:
+
 /usr/include/c++/13/debug/debug.h:
 
 /usr/include/c++/13/stdexcept:
@@ -407,10 +422,6 @@ CMakeFiles/e2e_deadlines.dir/main.cpp.o: /home/sasisekhar/Desktop/Bettati_Algori
 
 /usr/include/c++/13/bits/exception_ptr.h:
 
-/usr/include/x86_64-linux-gnu/bits/time64.h:
-
-/usr/include/c++/13/bits/basic_ios.h:
-
 /usr/include/asm-generic/errno-base.h:
 
 /usr/include/c++/13/bits/hash_bytes.h:
@@ -422,6 +433,22 @@ CMakeFiles/e2e_deadlines.dir/main.cpp.o: /home/sasisekhar/Desktop/Bettati_Algori
 /usr/include/c++/13/cwchar:
 
 /usr/include/alloca.h:
+
+/usr/include/x86_64-linux-gnu/c++/13/bits/atomic_word.h:
+
+/home/sasisekhar/Desktop/Bettati_Algorithms/input_reader.hpp:
+
+/usr/include/c++/13/typeinfo:
+
+/usr/include/c++/13/bits/cxxabi_init_exception.h:
+
+/usr/include/x86_64-linux-gnu/bits/uintn-identity.h:
+
+/usr/include/x86_64-linux-gnu/bits/stdlib-float.h:
+
+/usr/include/c++/13/streambuf:
+
+/usr/include/c++/13/bits/exception.h:
 
 /usr/include/c++/13/bits/predefined_ops.h:
 
@@ -451,15 +478,13 @@ CMakeFiles/e2e_deadlines.dir/main.cpp.o: /home/sasisekhar/Desktop/Bettati_Algori
 
 /home/sasisekhar/Desktop/Bettati_Algorithms/data_structures.hpp:
 
+/usr/include/c++/13/bits/fstream.tcc:
+
 /usr/include/c++/13/bits/locale_conv.h:
 
 /usr/include/c++/13/bits/basic_string.tcc:
 
 /usr/include/c++/13/bit:
-
-/usr/include/x86_64-linux-gnu/sys/single_threaded.h:
-
-/usr/include/c++/13/type_traits:
 
 /usr/include/c++/13/bits/nested_exception.h:
 
@@ -479,17 +504,15 @@ CMakeFiles/e2e_deadlines.dir/main.cpp.o: /home/sasisekhar/Desktop/Bettati_Algori
 
 /usr/include/c++/13/bits/cpp_type_traits.h:
 
+/usr/include/x86_64-linux-gnu/bits/time64.h:
+
+/usr/include/c++/13/bits/basic_ios.h:
+
 /usr/include/c++/13/bits/algorithmfwd.h:
 
 /usr/include/c++/13/bits/concept_check.h:
 
 /usr/include/c++/13/bits/alloc_traits.h:
-
-/usr/include/c++/13/bits/locale_facets.tcc:
-
-/usr/include/c++/13/bits/requires_hosted.h:
-
-/usr/include/c++/13/bits/string_view.tcc:
 
 /usr/include/c++/13/backward/binders.h:
 
@@ -517,13 +540,11 @@ CMakeFiles/e2e_deadlines.dir/main.cpp.o: /home/sasisekhar/Desktop/Bettati_Algori
 
 /usr/include/c++/13/bits/erase_if.h:
 
-/usr/include/x86_64-linux-gnu/bits/uintn-identity.h:
+/usr/include/c++/13/bits/locale_facets.tcc:
 
-/usr/include/x86_64-linux-gnu/bits/stdlib-float.h:
+/usr/include/c++/13/bits/requires_hosted.h:
 
-/usr/include/c++/13/streambuf:
-
-/usr/include/c++/13/bits/exception.h:
+/usr/include/c++/13/bits/string_view.tcc:
 
 /usr/include/c++/13/cwctype:
 
@@ -605,19 +626,17 @@ CMakeFiles/e2e_deadlines.dir/main.cpp.o: /home/sasisekhar/Desktop/Bettati_Algori
 
 /usr/include/x86_64-linux-gnu/bits/types/struct_FILE.h:
 
-/usr/include/c++/13/bits/charconv.h:
+/usr/include/c++/13/fstream:
 
 /usr/include/c++/13/bits/stl_pair.h:
+
+/usr/include/c++/13/bits/charconv.h:
 
 /usr/include/c++/13/cstdio:
 
 /usr/include/c++/13/ctime:
 
 /usr/include/c++/13/debug/assertions.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/13/include/stddef.h:
-
-/usr/include/c++/13/tuple:
 
 /usr/include/x86_64-linux-gnu/bits/pthreadtypes-arch.h:
 
@@ -676,7 +695,3 @@ CMakeFiles/e2e_deadlines.dir/main.cpp.o: /home/sasisekhar/Desktop/Bettati_Algori
 /usr/include/c++/13/bits/range_access.h:
 
 /usr/include/c++/13/system_error:
-
-/usr/include/c++/13/bits/cxxabi_init_exception.h:
-
-/usr/include/c++/13/typeinfo:
