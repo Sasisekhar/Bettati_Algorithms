@@ -5,12 +5,12 @@ import csv
 import matplotlib.pyplot as plt
 
 # Parameters
-num_testcases = 5
 input_dir = 'input_files'
 output_dir = 'output_files'
 log_dir = 'logs'
 python_script = 'python_scripts/testcases.py'
 simulator_exec = './schedule_simulator/bin/e2e_deadlines'
+plot_dir = 'output_plots'
 
 # Step 1: Clean previous scenarios
 def clean_previous_scenarios(ask):
@@ -20,31 +20,19 @@ def clean_previous_scenarios(ask):
         response = 'yes'
     
     if response.lower() in ['y', 'yes']:
-        print("Cleaning previous files...")
         # Remove old input, output, and log files
         for folder in [input_dir, output_dir, log_dir]:
             for file in os.listdir(folder):
                 os.remove(os.path.join(folder, file))
-        print("Old files removed.")
     else:
         print("Exiting.")
         exit()
 
-# Step 2: Generate test cases using the Python script
-def generate_test_cases(n,m, rho, sigma_t, mu_u, sigma_l, I):
-    for i in range(1, num_testcases + 1):
-        output_file = f'{input_dir}/testcase_{i}.csv'
-        # print(f"Generating test case {i}...")
-        subprocess.run(['python3', python_script,
-                f'-n={n}', f'-m={m}', f'-rho={rho}',
-                f'-sigma_t={sigma_t}', f'-mu_u={mu_u}',
-                f'-sigma_l={sigma_l}', f'-I={I}', f'-output_file={output_file}'])
-
 # Step 3: Run the simulator and log output
-def run_simulation():
+def run_simulation(num_cases):
     success_rate = 0
 
-    for i in range(1, num_testcases + 1):
+    for i in range(1, num_cases + 1):
         input_file = f'{input_dir}/testcase_{i}.csv'
         output_file = f'{output_dir}/output_{i}.csv'
         log_file = f'{log_dir}/simulation_{i}.log'
@@ -56,16 +44,15 @@ def run_simulation():
             result = subprocess.run([simulator_exec, input_file, output_file], stdout=log)
 
         # Check the return code
-        if result.returncode == -1:
+        if (result.returncode == -1) or (result.returncode == 255):
             # Schedule is non-feasible, delete the input file
-            print(f"Test case {i} is non-schedulable. Deleting input file {input_file}.")
             os.remove(input_file)
         else:
             success_rate += 1
-    return (success_rate/num_testcases) * 100
+    return (success_rate/num_cases) * 100
 
 # Step 4: Scrape the output files and plot the results
-def scrape_and_plot_results():
+def scrape_results():
     deadlines = []
     completion_times = []
 
@@ -98,56 +85,157 @@ def scrape_and_plot_results():
         print(f"Warning: Deadlines and Completion times do not match in length. "
               f"Deadlines: {len(deadlines)}, Completion Times: {len(completion_times)}")
 
-    return sum([max(0, (completion_times[i] - deadlines[i])/len(completion_times)) for i in range(len(completion_times))])
+    denom = 1
+    if len(completion_times) != 0:
+        denom = len(completion_times)
+
+    tardiness = [max(0, (completion_times[i] - deadlines[i])) for i in range(len(completion_times))]
+
+    return [sum(tardiness)/denom, [max(tardiness), min(tardiness)]]
+
+def plot_results(plots):
+    for plot in plots:
+        plt.figure()
+        x = plot['x']
+        ys = plot['y']
+        lines = plot['lines']
+        line_label = plot['line_label']
+        line_count = 0
+
+        for y in ys:
+
+            _label = ''
+
+            if(len(lines) != 0):
+                _label = f'{line_label} = {lines[line_count]}'
+                line_count += 1
+
+            if('err' in plot.keys()):
+                plt.plot(x, y, 'o', ls='-', label=_label)
+            else:
+                plt.plot(x, y, 'o', ls='-', label=_label)
+        
+        plt.ylim(-10, 110)
+        plt.xlabel(plot['x_label'])
+        plt.ylabel(plot['y_label'])
+        plt.title(plot['title'])
+        plt.legend()
+        plt.grid(True)
+        plt.savefig(f'{plot_dir}/{plot['title']}.png')
 
 # Main function to run the automation
 if __name__ == "__main__":
     clean_previous_scenarios(True)
     start_time = time.time()
 
-    n = 6
+    n = 4
     m = 4
     rho = 0.25
-    sigma_t = [0.1, 0.2, 0.3]
-    mu_u = [0.2, 0.4, 0.6, 0.7]
+    sigma_t = 0.2
+    mu_u = 0.7
     sigma_l = 0.5
     I = 50
+    num_cases = [10, 20, 30] #25000
+
+    test_param = "num_cases"
+
+    # for k in sigma_t:
+    #     tardiness = []
+    #     success_rate = []
+    #     for j in rho:
+    #         tardiness_mu = []
+    #         success_rate_mu = []
+
+    #         for i in mu_u:
+    #             clean_previous_scenarios(False)
+
+    #             print(f"Generating testcases for {test_param} = {i}")
+    #             # Step 2: Generate test cases
+    #             subprocess.run(['python3', python_script,
+    #                 f'-n={n}', f'-m={m}', f'-rho={j}',
+    #                 f'-sigma_t={k}', f'-mu_u={i}',
+    #                 f'-sigma_l={sigma_l}', f'-I={I}', f'-output_dir=input_files', f'-num_cases={num_cases}'])
+
+    #             print(f"Running the simulation for {test_param} = {i}")
+    #             sr = run_simulation(num_cases)
+    #             tr = scrape_results()
+
+    #             print(f"Mean Tardiness: {tr}, Success Rate: {sr}")
+
+    #             # Step 3: Run the scheduling simulator
+    #             tardiness_mu.append(tr)
+    #             success_rate_mu.append(sr)
+    #         tardiness.append(tardiness_mu)
+    #         success_rate.append(success_rate_mu)
+        
+    #     plot_results([
+    #                     {
+    #                         "x": mu_u,
+    #                         "y": success_rate,
+    #                         "lines": rho,
+    #                         "title": f"Success Rate vs mu_u for sigma_t = {k}",
+    #                         "line_label": "rho",
+    #                         "x_label": "mu_u",
+    #                         "y_label": "Success Rate"
+    #                     },
+    #                     {
+    #                         "x": mu_u,
+    #                         "y": tardiness,
+    #                         "lines": rho,
+    #                         "title": f"Mean Tardiness vs mu_u for sigma_t = {k}",
+    #                         "line_label": "rho",
+    #                         "x_label": "mu_u",
+    #                         "y_label": "Mean Tardiness"
+    #                     }
+    #                 ])
 
     tardiness = []
+    tardiness_limits = []
+    success_rate = []
+    for i in num_cases:
+        clean_previous_scenarios(False)
 
-    for j in sigma_t:
-        tardiness_mu = []
+        print(f"Generating testcases for {test_param} = {i}")
+        # Step 2: Generate test cases
+        subprocess.run(['python3', python_script,
+            f'-n={n}', f'-m={m}', f'-rho={rho}',
+            f'-sigma_t={sigma_t}', f'-mu_u={mu_u}',
+            f'-sigma_l={sigma_l}', f'-I={I}', f'-output_dir=input_files', f'-num_cases={i}'])
 
-        for i in mu_u:
-            clean_previous_scenarios(False)
+        print(f"Running the simulation for {test_param} = {i}")
+        sr = run_simulation(i)
+        tr = scrape_results()
 
-            print("Generating test cases for mu_u = ", i)
-            # Step 2: Generate test cases
-            generate_test_cases(n, m, rho, j, i, sigma_l, I)
+        print(f"Mean Tardiness: {tr[0]}, Success Rate: {sr}")
 
-            run_simulation()
+        # Step 3: Run the scheduling simulator
+        tardiness.append(tr[0])
+        tardiness_limits.append(tr[1])
+        success_rate.append(sr)
+        
+    plot_results([
+                    {
+                        "x": num_cases,
+                        "y": [success_rate],
+                        "lines": [],
+                        "title": f"Success Rate vs mu_u",
+                        "line_label": "",
+                        "x_label": "mu_u",
+                        "y_label": "Success Rate"
+                    },
+                    {
+                        "x": num_cases,
+                        "y": [tardiness],
+                        "err": [tardiness_limits],
+                        "lines": [],
+                        "title": f"Mean Tardiness vs mu_u",
+                        "line_label": "",
+                        "x_label": "mu_u",
+                        "y_label": "Mean Tardiness"
+                    }
+                ])
 
-            sr = scrape_and_plot_results()
-
-            # Step 3: Run the scheduling simulator
-            print("tardiness: ", sr)
-            tardiness_mu.append(sr)
-        tardiness.append(tardiness_mu)
-
-    print(tardiness)
-    plt.plot(tardiness[0], label='sigma_t = 0.1', color='blue')
-    plt.plot(tardiness[1], label='sigma_t = 0.2', color='green')
-    plt.plot(tardiness[2], label='sigma_t = 0.3', color='red')
-
-    plt.xlabel('mu_u')
-    plt.ylabel('Tardiness')
-    plt.title('Tardiness vs mu_u')
-    plt.legend()
-    plt.grid(True)
-    plt.savefig('T_vs_M.png')
-    plt.show()
-    # Step 4: Scrape the output files and plot the results
-    # scrape_and_plot_results()
 
     end_time = time.time()
+    plt.show()
     print(f"Automation completed in {end_time - start_time:.2f} seconds.")

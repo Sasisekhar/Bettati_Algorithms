@@ -74,9 +74,9 @@ if __name__ == "__main__":
     parser.add_argument('-mu_u', type=float, required=True, help='Mean utilization (mu_u)')
     parser.add_argument('-sigma_l', type=float, required=True, help='Standard deviation of laxity (sigma_l)')
     parser.add_argument('-I', type=int, required=True, help='Maximum release time (I)')
-
+    parser.add_argument('-num_cases', type=int, help='Number of testcases', default=3)
     # Add argument for the output file
-    parser.add_argument('-output_file', type=str, help='Path to output CSV file')
+    parser.add_argument('-output_dir', type=str, help='Path to output CSV file')
 
     # Parse the arguments
     args = parser.parse_args()
@@ -89,10 +89,14 @@ if __name__ == "__main__":
     mu_u = args.mu_u
     sigma_l = args.sigma_l
     I = args.I
+    num_cases = args.num_cases
+    output_dir = args.output_dir
 
-    # Generate task set
-    task_set = generate_task_set(n, m, rho, sigma_t, mu_u, sigma_l, I)
+    for i in range(1, num_cases + 1):
+        output_file = f'{output_dir}/testcase_{i}.csv'
+    
+        # Generate task set
+        task_set = generate_task_set(n, m, rho, sigma_t, mu_u, sigma_l, I)
 
-    # Output to CSV file
-    output_file = args.output_file
-    write_to_csv(task_set, m, output_file)
+        # Output to CSV file
+        write_to_csv(task_set, m, output_file)
