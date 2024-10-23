@@ -19,7 +19,7 @@ int main(int argc, char** argv) {
     auto output = algorithm_H(input.task_set, input.num_processors);
 
     if(output.first == false) {
-        std::cerr << "not schedulable" << std::endl;
+        // std::cerr << "not schedulable" << std::endl;
         return -1;
     }
 

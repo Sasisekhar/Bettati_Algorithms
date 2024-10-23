@@ -92,12 +92,12 @@ void write_schedule_to_csv(const std::vector<process_schedule>& schedule, const 
     std::ofstream file(output_file);
     
     // Write the header
-    file << "Processor, Task ID, Start Time, Completion Time\n";
+    file << "Processor, Task ID, Start Time, Completion Time, Deadline\n";
     
     // Write the schedule
     for (const auto& s : schedule) {
         file << s.processor_id << ", T" << s.task.spid << ", " 
-             << s.start_time << ", " << s.start_time + s.task_duration << "\n";
+             << s.start_time << ", " << s.start_time + s.task_duration << ", " << s.task.effective_deadline << "\n";
     }
 
     file.close();
