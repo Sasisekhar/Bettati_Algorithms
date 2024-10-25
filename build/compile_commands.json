@@ -1,0 +1,8 @@
+[
+{
+  "directory": "/home/sasisekhar/Desktop/Bettati_Algorithms/build",
+  "command": "/usr/bin/g++ -I/home/sasisekhar/Desktop/Bettati_Algorithms/schedule_simulator/. -g -o CMakeFiles/e2e_deadlines.dir/main.cpp.o -c /home/sasisekhar/Desktop/Bettati_Algorithms/schedule_simulator/main.cpp",
+  "file": "/home/sasisekhar/Desktop/Bettati_Algorithms/schedule_simulator/main.cpp",
+  "output": "CMakeFiles/e2e_deadlines.dir/main.cpp.o"
+}
+]
