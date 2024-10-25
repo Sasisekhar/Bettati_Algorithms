@@ -13,6 +13,11 @@ python_script = 'python_scripts/testcases.py'
 simulator_exec = './schedule_simulator/bin/e2e_deadlines'
 plot_dir = 'output_plots'
 
+os.makedirs(plot_dir, exist_ok=True)
+os.makedirs(input_dir, exist_ok=True)
+os.makedirs(output_dir, exist_ok=True)
+os.makedirs(log_dir, exist_ok=True)
+
 def clean_previous_scenarios(ask):
     if(ask):
         response = input("Will delete previous scenarios. Are you sure? [y/N] ")
