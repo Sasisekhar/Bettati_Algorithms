@@ -1,4 +1,5 @@
 import os
+from statistics import mean
 import subprocess
 import time
 import csv
@@ -58,6 +59,7 @@ def run_simulation(num_cases):
 def scrape_results():
     deadlines = []
     completion_times = []
+    release_times = []
 
     # Extract data from each output file
     for output_file, input_file in zip(os.listdir(output_dir), os.listdir(input_dir)):
@@ -69,6 +71,9 @@ def scrape_results():
                 reader_out = csv.reader(out_file)
                 next(reader_out)  # Skip header
 
+                reader_in = csv.reader(in_file)
+                next(reader_in)  # Skip header
+
                 for row in reader_out:
                     if len(row) < 5:
                         print(f"Skipping malformed row in {output_file}: {row}")
@@ -79,6 +84,9 @@ def scrape_results():
 
                     deadlines.append(deadline)
                     completion_times.append(completion_time)
+                
+                for row in reader_in:
+                    release_times.append(float(row[0]))
 
         except Exception as e:
             print(f"Error processing file {output_file}: {e}")
@@ -87,14 +95,15 @@ def scrape_results():
         print(f"Warning: Deadlines and Completion times do not match in length. "
               f"Deadlines: {len(deadlines)}, Completion Times: {len(completion_times)}")
 
-    denom = 1
-    if len(completion_times) != 0:
-        denom = len(completion_times)
-
     tardiness = [max(0, (completion_times[i] - deadlines[i])) for i in range(len(completion_times))]
-    mean_tardiness = sum(tardiness)/denom
 
-    return [mean_tardiness, mean_tardiness]
+    return {
+            'mean_tardiness': mean(tardiness), 
+            'max_tardiness': max(tardiness), 
+            'mean_release_time': mean(release_times), 
+            'mean_deadline': mean(deadlines), 
+            'mean_completion_time': mean(completion_times)
+            }
 
 def plot_results(plots):
     for plot in plots:
@@ -105,22 +114,33 @@ def plot_results(plots):
         line_label = plot.get('line_label', '')
         line_count = 0
         line_styles = ['-', '-.', ':', '--']
+        fill_between_count = 0
 
         if('table' in plot.keys()):
             plt.subplot(2, 1, 1)
         
+
         for y in ys:
             _label = f'{line_label} = {lines[line_count]}' if lines else ''
+
             if 'err' in plot:
                 y_err = plot['err'][line_count] if isinstance(plot['err'], list) else plot['err']
                 plt.errorbar(
                     x, y, marker='o', linestyle=line_styles[line_count % len(line_styles)],
-                    yerr=y_err, label=_label, lolims=True
+                    yerr=y_err, label=_label, lolims=True, linewidth=2
                 )
             else:
-                plt.plot(x, y, marker='o', linestyle=line_styles[line_count % len(line_styles)], label=_label)
+                plt.plot(x, y, marker='o', linestyle=line_styles[line_count % len(line_styles)], label=_label, linewidth=2)
             line_count += 1
-        
+
+            if('fill_between' in plot.keys()):
+                fill_between_data = plot["fill_between"]
+                plt.fill_between(x, 
+                                fill_between_data['y1'][fill_between_count] if isinstance(fill_between_data['y1'], list) else fill_between_data['y1'], 
+                                fill_between_data['y2'][fill_between_count] if isinstance(fill_between_data['y2'], list) else fill_between_data['y2'],
+                                alpha = 0.5, linewidth=1)
+                fill_between_count += 1
+
         if('y_lim' in plot):
             plt.ylim(plot['y_lim'])
 
@@ -164,50 +184,64 @@ if __name__ == "__main__":
     _m = [4]
     rho = 0.25
     _sigma_t = [0.3]
-    mu_u = 0.7
-    _sigma_l = [0.05, 0.25, 0.5, 0.75]
+    _mu_u = [i * 0.01 for i in range(50, 100)]
+    sigma_l = 0.25
     I = 50
-    num_cases = 15
+    num_cases = 1000
 
-    test_param = ["m", "sigma_t", "sigma_l"]
+    test_param = ["m", "sigma_t", "mu_u"]
 
     results = []
     for m in _m:
         tardiness_n = []
         success_rate_n = []
         tardiness_err_n = []
+        completion_times_n = []
+        release_times_n = []
+        deadlines_n = []
         for sigma_t in _sigma_t:
             tardiness_sigma = []
             success_rate_sigma = []
             tardiness_err_sigma = []
-            for sigma_l in _sigma_l:
+            completion_times_sigma = []
+            release_times_sigma = []
+            deadlines_sigma = []
+            for mu_u in _mu_u:
                 clean_previous_scenarios(False)
-                print(f"Generating testcases for {test_param} = {m, sigma_t, sigma_l}")
+                print(f"Generating testcases for {test_param} = {m, sigma_t, mu_u}")
                 subprocess.run(['python3', python_script,
                     f'-n={n}', f'-m={m}', f'-rho={rho}',
                     f'-sigma_t={sigma_t}', f'-mu_u={mu_u}',
                     f'-sigma_l={sigma_l}', f'-I={I}', f'-output_dir=input_files', f'-num_cases={num_cases}'])
 
-                print(f"Running the simulation for {test_param} = {m, sigma_t, sigma_l}")
+                print(f"Running the simulation for {test_param} = {m, sigma_t, mu_u}")
                 sr = run_simulation(num_cases)
                 tr = scrape_results()
 
-                print(f"Mean Tardiness: {tr[0]}, Success Rate: {sr}")
-                tardiness_sigma.append(tr[0])
+                print(f"Mean Tardiness: {tr['mean_tardiness']}, Success Rate: {sr}")
+                tardiness_sigma.append(tr['mean_tardiness'])
                 success_rate_sigma.append(sr)
-                tardiness_err_sigma.append(tr[1])
+                tardiness_err_sigma.append(tr['max_tardiness'])
+                completion_times_sigma.append(tr['mean_completion_time'])
+                deadlines_sigma.append(tr['mean_deadline'])
+                release_times_sigma.append(tr['mean_release_time'])
+
+
             tardiness_n.append(tardiness_sigma)
             success_rate_n.append(success_rate_sigma)
             tardiness_err_n.append(tardiness_err_sigma)
+            completion_times_n.append(completion_times_sigma)
+            deadlines_n.append(deadlines_sigma)
+            release_times_n.append(release_times_sigma)
 
         plot_results([
                     {
-                        "x": _sigma_l,
+                        "x": _mu_u,
                         "y": success_rate_n,
                         "lines": _sigma_t,
-                        "title": f"Success Rate vs sigma_l",
+                        "title": f"Success Rate vs mu_u",
                         "line_label": "sigma_t",
-                        "x_label": "sigma_l",
+                        "x_label": "mu_u",
                         "y_label": "Success Rate",
                         "y_lim": [-10, 110],
                         "table": {
@@ -219,13 +253,13 @@ if __name__ == "__main__":
                         }
                     },
                     {
-                        "x": _sigma_l,
+                        "x": _mu_u,
                         "y": tardiness_n,
                         "err": tardiness_err_n,
                         "lines": _sigma_t,
-                        "title": f"Mean Tardiness vs sigma_l",
+                        "title": f"Mean Tardiness vs mu_u",
                         "line_label": "sigma_t",
-                        "x_label": "sigma_l",
+                        "x_label": "mu_u",
                         "y_label": "Mean Tardiness",
                         "table": {
                             "n": n,
@@ -233,6 +267,26 @@ if __name__ == "__main__":
                             "rho": rho,
                             "mu_u": mu_u,
                             "num_cases": num_cases
+                        }
+                    },
+                    {
+                        "x": _mu_u,
+                        "y": completion_times_n,
+                        "lines": _sigma_t,
+                        "title": f"completion time vs mu_u",
+                        "line_label": "sigma_t",
+                        "x_label": "mu_u",
+                        "y_label": "copmletion time",
+                        "table": {
+                            "n": n,
+                            "m": m,
+                            "rho": rho,
+                            "mu_u": mu_u,
+                            "num_cases": num_cases
+                        },
+                        "fill_between": {
+                            "y1": release_times_n,
+                            "y2": deadlines_n
                         }
                     }
                 ])
