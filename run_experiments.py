@@ -172,7 +172,7 @@ def plot_results(plots):
         current_time = datetime.datetime.now()
 
         time_file = str(current_time.day) + '_' + str(current_time.month) + '_' + str(current_time.year) + '_' + str(current_time.hour) + '_' + str(current_time.minute) + '_' + str(current_time.second)
-            
+
         plt.savefig(f'{plot_dir}/{plot['title'] + '_' + time_file}.png')
 
 # Main function to run the automation
@@ -180,14 +180,14 @@ if __name__ == "__main__":
     clean_previous_scenarios(True)
     start_time = time.time()
 
-    n = 6
-    _m = [4]
+    n = 4
+    _m = [1, 4, 6]
     rho = 0.25
-    _sigma_t = [0.3]
-    _mu_u = [i * 0.01 for i in range(50, 100)]
+    _sigma_t = [0.1, 0.3]
+    _mu_u = [0.5, 0.6, 0.7]
     sigma_l = 0.25
     I = 50
-    num_cases = 1000
+    num_cases = 10000
 
     test_param = ["m", "sigma_t", "mu_u"]
 
